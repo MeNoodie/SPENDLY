@@ -28,6 +28,160 @@ Instead of merely tracking where your money went in the past, Spendly is a forwa
 
 ---
 
+## 🗺️ End-to-End System Flowchart
+
+```mermaid
+flowchart TB
+    U["👤 User"]
+
+    subgraph UI["1. Frontend — React / Next.js"]
+        AUTH["Sign Up / Login"]
+        DASH["Dashboard"]
+        DEC["New Decision"]
+        CHAT["Just Ask — AI Chat"]
+        PROFILE["Financial Profile & Expenses"]
+        TIMELINE["Cashflow Timeline"]
+        IMPORT["Upload CSV / JSON / PDF / Image"]
+        HISTORY["Decision History"]
+    end
+
+    U --> AUTH
+    AUTH --> DASH
+    DASH --> DEC
+    DASH --> PROFILE
+    DASH --> TIMELINE
+    DASH --> IMPORT
+    DASH --> HISTORY
+    DEC --> CHAT
+
+    subgraph API["2. Backend — FastAPI / Python"]
+        AUTHAPI["Authentication & User APIs"]
+        TXAPI["Transactions & Import API"]
+        PROFAPI["Profile, Bills & Recurring Income APIs"]
+        DECAPI["Decision & Chat API"]
+        HISTAPI["History API"]
+    end
+
+    AUTH --> AUTHAPI
+    PROFILE --> PROFAPI
+    TIMELINE --> PROFAPI
+    IMPORT --> TXAPI
+    DEC --> DECAPI
+    CHAT --> DECAPI
+    HISTORY --> HISTAPI
+
+    subgraph INGEST["3. Transaction Ingestion Pipeline"]
+        PARSE["Parse Files / OCR"]
+        NORMAL["Normalize Dates, Amounts & Merchants"]
+        DEDUP["Duplicate Detection"]
+        CAT["Rule-Based Categorization"]
+        CLASSIFY["Mesh LLM Fallback for Ambiguous Records"]
+        REVIEW["User Reviews / Corrects Categories"]
+    end
+
+    TXAPI --> PARSE
+    PARSE --> NORMAL --> DEDUP --> CAT
+    CAT --> CLASSIFY
+    CAT --> REVIEW
+    CLASSIFY --> REVIEW
+
+    subgraph DB["4. Database — SQLite MVP / PostgreSQL Production"]
+        USERS[("Users & Financial Profiles")]
+        TRANSACTIONS[("Transactions & Categories")]
+        EVENTS[("Bills, Income & Timeline Events")]
+        IMPORTS[("Import Jobs & Audit Records")]
+        MESSAGES[("Chat Messages & Decision History")]
+        SUMMARIES[("Monthly Spending Summaries")]
+    end
+
+    AUTHAPI <--> USERS
+    PROFAPI <--> USERS
+    PROFAPI <--> EVENTS
+    TXAPI <--> TRANSACTIONS
+    TXAPI <--> IMPORTS
+    REVIEW --> TRANSACTIONS
+    TRANSACTIONS --> SUMMARIES
+    EVENTS --> SUMMARIES
+    HISTAPI <--> MESSAGES
+    DECAPI <--> MESSAGES
+
+    subgraph ENGINE["5. Deterministic Financial Engine — Python"]
+        STATE["Load Current Balance, Safety Reserve & Obligations"]
+        HISTORYDATA["Analyze Monthly Spending & Category Trends"]
+        BASELINE["Baseline Cashflow Forecast"]
+        SCENARIO["Simulate Purchase / Goal Scenarios"]
+        EMI["Calculate EMI, Interest, Fees & Total Cost"]
+        SAFETY["Check Minimum Balance & Future Shortfalls"]
+        COMPARE["Compare Full Payment vs EMI vs Wait"]
+    end
+
+    USERS --> STATE
+    EVENTS --> STATE
+    TRANSACTIONS --> HISTORYDATA
+    SUMMARIES --> HISTORYDATA
+    STATE --> BASELINE
+    HISTORYDATA --> BASELINE
+    DECAPI --> SCENARIO
+    BASELINE --> SCENARIO
+    SCENARIO --> EMI
+    SCENARIO --> SAFETY
+    EMI --> COMPARE
+    SAFETY --> COMPARE
+
+    subgraph AGENTS["6. AI Agent Orchestration — LangGraph"]
+        COORD["Coordinator Agent"]
+        ANALYST["Financial Analysis Agent"]
+        FORECAST["Forecast & Scenario Agent"]
+        ADVISOR["Decision Advisor Agent"]
+        EXPLAIN["Explanation & Decision Audit"]
+    end
+
+    DECAPI --> COORD
+    COORD --> ANALYST
+    COORD --> FORECAST
+    COORD --> ADVISOR
+    STATE --> ANALYST
+    HISTORYDATA --> ANALYST
+    BASELINE --> FORECAST
+    COMPARE --> ADVISOR
+    ANALYST --> EXPLAIN
+    FORECAST --> EXPLAIN
+    ADVISOR --> EXPLAIN
+
+    subgraph MESH["7. Mesh API — Required for FinPilot"]
+        LLM["LLM Inference via Mesh API"]
+    end
+
+    ANALYST <--> LLM
+    FORECAST <--> LLM
+    ADVISOR <--> LLM
+    CLASSIFY <--> LLM
+
+    subgraph OUTPUT["8. Final User Experience"]
+        RESULT["Personalized Financial Recommendation"]
+        FULL["Pay in Full"]
+        INSTALLMENT["Choose Suitable EMI"]
+        WAIT["Wait / Save More"]
+        REASONS["Reasons, Calculations & Risk Warnings"]
+        SAVE["Save Decision & Supporting Evidence"]
+    end
+
+    EXPLAIN --> RESULT
+    RESULT --> FULL
+    RESULT --> INSTALLMENT
+    RESULT --> WAIT
+    RESULT --> REASONS
+    REASONS --> SAVE
+    SAVE --> MESSAGES
+    RESULT --> DASH
+    RESULT --> CHAT
+    TRANSACTIONS --> TIMELINE
+    EVENTS --> TIMELINE
+    SUMMARIES --> DASH
+```
+
+---
+
 ## 🏗️ Architecture
 
 ```
