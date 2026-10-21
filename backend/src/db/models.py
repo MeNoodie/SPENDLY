@@ -8,6 +8,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_code = Column(String, unique=True, index=True, nullable=True) # e.g. "userSP01"
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
@@ -22,6 +23,7 @@ class FinancialProfile(Base):
     __tablename__ = "financial_profiles"
 
     user_id = Column(String, ForeignKey("users.id"), primary_key=True)
+    user_code = Column(String, index=True, nullable=True) # e.g. "userSP01"
     salary = Column(Float, default=0.0)
     salary_day = Column(Integer, default=1)
     current_savings = Column(Float, default=0.0) # Total available savings

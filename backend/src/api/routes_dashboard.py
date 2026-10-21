@@ -24,6 +24,8 @@ def get_dashboard_data(current_user: User = Depends(get_current_user), db: Sessi
     bills = db.query(ExpenseBill).filter(ExpenseBill.user_id == current_user.id).all()
     metrics = calculate_dashboard_metrics(profile, bills)
     metrics["user_name"] = current_user.name
+    metrics["user_id"] = current_user.user_code or current_user.id
+    metrics["user_code"] = current_user.user_code or "userSP01"
 
     decisions = db.query(DecisionHistory).filter(DecisionHistory.user_id == current_user.id).order_by(DecisionHistory.created_at.desc()).limit(6).all()
     

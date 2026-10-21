@@ -31,7 +31,7 @@ export default function DashboardView({
     );
   }
 
-  const { safe_to_spend_today, current_picture, next_few_weeks, recent_decisions, user_name } = dashboardData;
+  const { safe_to_spend_today, current_picture, next_few_weeks, recent_decisions, user_name, user_code } = dashboardData;
 
   const isHealthy = safe_to_spend_today > 15000;
   const isTight = safe_to_spend_today > 0 && safe_to_spend_today <= 15000;
@@ -43,9 +43,25 @@ export default function DashboardView({
       {/* Top Banner / Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.5px' }}>
-            Financial Health Overview
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.5px' }}>
+              Financial Health Overview
+            </h2>
+            {user_code && (
+              <span style={{
+                background: 'rgba(99, 102, 241, 0.18)',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
+                color: '#a5b4fc',
+                fontSize: '11px',
+                fontWeight: '700',
+                padding: '2px 8px',
+                borderRadius: '6px',
+                fontFamily: 'monospace'
+              }}>
+                {user_code}
+              </span>
+            )}
+          </div>
           <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>
             Real-time balance calculations derived directly from your profile and active bills.
           </p>

@@ -21,11 +21,11 @@ export default function ProfileView({ userProfile, onUpdateProfile, upcomingEsse
 
   useEffect(() => {
     if (userProfile) {
-      setName(userProfile.name || 'Piyush');
-      setSalary(userProfile.salary ? userProfile.salary.toString() : '95000');
+      setName(userProfile.name || '');
+      setSalary(userProfile.salary !== undefined && userProfile.salary !== null ? userProfile.salary.toString() : '0');
       setSalaryDay(userProfile.salary_day || 1);
-      setCurrentSavings(userProfile.current_savings ? userProfile.current_savings.toString() : '85000');
-      setSecureSavings(userProfile.secure_savings ? userProfile.secure_savings.toString() : '25000');
+      setCurrentSavings(userProfile.current_savings !== undefined && userProfile.current_savings !== null ? userProfile.current_savings.toString() : '0');
+      setSecureSavings(userProfile.secure_savings !== undefined && userProfile.secure_savings !== null ? userProfile.secure_savings.toString() : '0');
     }
   }, [userProfile]);
 
@@ -88,6 +88,56 @@ export default function ProfileView({ userProfile, onUpdateProfile, upcomingEsse
       {/* Main Settings Form */}
       <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
         
+        {/* User ID Badge Card */}
+        <div style={{
+          background: 'rgba(99, 102, 241, 0.08)',
+          border: '1px solid rgba(99, 102, 241, 0.25)',
+          borderRadius: '10px',
+          padding: '14px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div>
+            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#a5b4fc', fontWeight: '700' }}>
+              User ID (Personal Data Scope)
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+              <span style={{
+                fontFamily: 'monospace',
+                fontSize: '18px',
+                fontWeight: '800',
+                color: '#ffffff',
+                background: 'rgba(0,0,0,0.4)',
+                padding: '2px 10px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                {userProfile?.user_code || userProfile?.user_id || 'userSP01'}
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                {userProfile?.email || ''}
+              </span>
+            </div>
+          </div>
+          <div style={{
+            fontSize: '11px',
+            color: '#34d399',
+            background: 'rgba(16, 185, 129, 0.1)',
+            padding: '4px 10px',
+            borderRadius: '999px',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}>
+            <ShieldCheck size={13} />
+            <span>Isolated Financial Scope Active</span>
+          </div>
+        </div>
+
         {/* Name */}
         <div>
           <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px' }}>

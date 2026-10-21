@@ -18,6 +18,19 @@ class LoginRequest(BaseModel):
     email: str = Field(..., example="test@gmail.com")
     password: str = Field(..., example="test123")
 
+def get_next_user_code(db: Session) -> str:
+    users = db.query(User.user_code).all()
+    existing_nums = []
+    for (code,) in users:
+        if code and code.startswith("userSP"):
+            try:
+                num = int(code.replace("userSP", ""))
+                existing_nums.append(num)
+            except ValueError:
+                pass
+    next_num = max(existing_nums, default=0) + 1
+    return f"userSP{next_num:02d}"
+
 @router.post("/register")
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     email_clean = payload.email.strip().lower()
@@ -28,19 +41,24 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             detail="An account with this email already exists"
         )
 
-    # 1. Create User
+    # 1. Allocate next unique user code (e.g. userSP01, userSP02)
+    user_code = get_next_user_code(db)
+
+    # 2. Create User
     new_user = User(
         name=payload.name.strip(),
         email=email_clean,
-        hashed_password=hash_password(payload.password)
+        hashed_password=hash_password(payload.password),
+        user_code=user_code
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # 2. Initialize User Financial Profile with ZERO data
+    # 3. Initialize User Financial Profile with ZERO data and user_code
     profile = FinancialProfile(
         user_id=new_user.id,
+        user_code=user_code,
         salary=0.0,
         salary_day=1,
         current_savings=0.0,
@@ -49,7 +67,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.add(profile)
     db.commit()
 
-    # 3. Generate JWT
+    # 4. Generate JWT
     token = create_access_token(data={"sub": new_user.id, "email": new_user.email})
 
     return {
@@ -59,6 +77,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": {
             "id": new_user.id,
+            "user_id": new_user.user_code,
+            "user_code": new_user.user_code,
             "name": new_user.name,
             "email": new_user.email
         }
@@ -77,6 +97,12 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
     token = create_access_token(data={"sub": user.id, "email": user.email})
 
+    # If user doesn't have user_code yet, backfill one
+    if not user.user_code:
+        user.user_code = get_next_user_code(db)
+        db.commit()
+        db.refresh(user)
+
     return {
         "status": "success",
         "message": "Login successful",
@@ -84,6 +110,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user": {
             "id": user.id,
+            "user_id": user.user_code,
+            "user_code": user.user_code,
             "name": user.name,
             "email": user.email
         }
@@ -92,15 +120,30 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me")
 def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     profile = db.query(FinancialProfile).filter(FinancialProfile.user_id == current_user.id).first()
+    
+    # Backfill user_code if missing
+    if not current_user.user_code:
+        current_user.user_code = get_next_user_code(db)
+        db.commit()
+        db.refresh(current_user)
+
+    if profile and not profile.user_code:
+        profile.user_code = current_user.user_code
+        db.commit()
+
     return {
         "status": "success",
         "user": {
             "id": current_user.id,
+            "user_id": current_user.user_code,
+            "user_code": current_user.user_code,
             "name": current_user.name,
             "email": current_user.email,
             "created_at": current_user.created_at.isoformat() if current_user.created_at else None
         },
         "profile": {
+            "user_id": current_user.user_code,
+            "user_code": current_user.user_code,
             "salary": profile.salary if profile else 0.0,
             "salary_day": profile.salary_day if profile else 1,
             "current_savings": profile.current_savings if profile else 0.0,

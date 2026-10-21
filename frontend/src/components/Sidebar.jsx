@@ -23,6 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, user, up
 
   const displayName = user?.name || userProfile?.name || 'User';
   const displayEmail = user?.email || userProfile?.email || '';
+  const displayUserCode = user?.user_code || userProfile?.user_code || user?.user_id || userProfile?.user_id || 'userSP01';
 
   return (
     <aside style={{
@@ -72,8 +73,8 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, user, up
         gap: '12px'
       }}>
         <div style={{
-          width: '36px',
-          height: '36px',
+          width: '38px',
+          height: '38px',
           borderRadius: '50%',
           background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
           display: 'flex',
@@ -81,12 +82,27 @@ export default function Sidebar({ activeTab, setActiveTab, userProfile, user, up
           justifyContent: 'center',
           fontWeight: '700',
           fontSize: '14px',
-          color: '#ffffff'
+          color: '#ffffff',
+          flexShrink: 0
         }}>
           {displayName.substring(0, 2).toUpperCase()}
         </div>
-        <div style={{ overflow: 'hidden' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Good Morning,</div>
+        <div style={{ overflow: 'hidden', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Hello,</span>
+            <span style={{
+              background: 'rgba(99, 102, 241, 0.18)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              color: '#a5b4fc',
+              fontSize: '10px',
+              fontWeight: '700',
+              padding: '1px 6px',
+              borderRadius: '4px',
+              fontFamily: 'monospace'
+            }}>
+              {displayUserCode}
+            </span>
+          </div>
           <div style={{ fontSize: '14px', fontWeight: '700', color: '#ffffff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
             {displayName}
           </div>

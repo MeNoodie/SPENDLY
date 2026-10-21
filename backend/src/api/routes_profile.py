@@ -21,6 +21,7 @@ def get_profile(current_user: User = Depends(get_current_user), db: Session = De
     if not profile:
         profile = FinancialProfile(
             user_id=current_user.id,
+            user_code=current_user.user_code,
             salary=0.0,
             salary_day=1,
             current_savings=0.0,
@@ -29,11 +30,16 @@ def get_profile(current_user: User = Depends(get_current_user), db: Session = De
         db.add(profile)
         db.commit()
         db.refresh(profile)
+    elif not profile.user_code and current_user.user_code:
+        profile.user_code = current_user.user_code
+        db.commit()
         
     return {
         "status": "success",
         "data": {
-            "user_id": current_user.id,
+            "id": current_user.id,
+            "user_id": current_user.user_code or current_user.id,
+            "user_code": current_user.user_code or "userSP01",
             "name": current_user.name,
             "email": current_user.email,
             "salary": profile.salary,
@@ -48,7 +54,7 @@ def get_profile(current_user: User = Depends(get_current_user), db: Session = De
 def update_profile(payload: ProfileUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     profile = db.query(FinancialProfile).filter(FinancialProfile.user_id == current_user.id).first()
     if not profile:
-        profile = FinancialProfile(user_id=current_user.id)
+        profile = FinancialProfile(user_id=current_user.id, user_code=current_user.user_code)
         db.add(profile)
 
     if payload.name is not None and payload.name.strip():
@@ -61,6 +67,8 @@ def update_profile(payload: ProfileUpdate, current_user: User = Depends(get_curr
         profile.current_savings = payload.current_savings
     if payload.secure_savings is not None:
         profile.secure_savings = payload.secure_savings
+    if not profile.user_code and current_user.user_code:
+        profile.user_code = current_user.user_code
 
     db.commit()
     db.refresh(profile)
@@ -68,7 +76,9 @@ def update_profile(payload: ProfileUpdate, current_user: User = Depends(get_curr
         "status": "success",
         "message": "Financial profile updated successfully",
         "data": {
-            "user_id": current_user.id,
+            "id": current_user.id,
+            "user_id": current_user.user_code or current_user.id,
+            "user_code": current_user.user_code or "userSP01",
             "name": current_user.name,
             "email": current_user.email,
             "salary": profile.salary,

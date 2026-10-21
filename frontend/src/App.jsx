@@ -63,6 +63,11 @@ export default function App() {
       setUserProfile(prof);
       setExpenses(exp);
       setHistory(hist);
+      if (prof?.user_code && (!user?.user_code || user.user_code !== prof.user_code)) {
+        const updated = { ...(user || {}), user_id: prof.user_code, user_code: prof.user_code, name: prof.name || user?.name };
+        setUser(updated);
+        setStoredUser(updated);
+      }
     } catch (err) {
       console.error(err);
       if (err.message === 'UNAUTHORIZED' || err.message === 'Session expired') {

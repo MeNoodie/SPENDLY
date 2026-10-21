@@ -121,6 +121,23 @@ export default function AuthModal({ onAuthSuccess }) {
           </button>
         </div>
 
+        {!isLogin && (
+          <div style={{
+            fontSize: '11px',
+            color: '#a5b4fc',
+            background: 'rgba(99, 102, 241, 0.1)',
+            border: '1px solid rgba(99, 102, 241, 0.25)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <ShieldCheck size={14} />
+            <span>Assigned isolated ID (e.g. <b>userSP01</b>) — your financial data is 100% private.</span>
+          </div>
+        )}
+
         {error && (
           <div style={{
             background: 'rgba(244, 63, 94, 0.15)',
