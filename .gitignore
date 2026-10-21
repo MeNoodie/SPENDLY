@@ -38,3 +38,9 @@ dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Internal planning & demo scripts
+idea.md
+plan.md
+*.excalidraw
+seed.py

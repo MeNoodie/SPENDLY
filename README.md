@@ -24,8 +24,7 @@ Instead of merely tracking where your money went in the past, Spendly is a forwa
 - **Zero-State & User Authentication**:
   - User registration & login with JWT bearer tokens.
   - PBKDF2-HMAC-SHA256 password hashing.
-  - Starts with zero data out of the box so every user can test manually.
-  - Optional standalone seeder script (`seed.py`) to inject test data when desired.
+  - Starts with clean zero data so each feature can be tested directly from the UI.
 
 ---
 
@@ -59,9 +58,6 @@ SPENDLY/
 │   │   ├── App.jsx            # Main app shell & view state
 │   │   └── index.css          # Glassmorphism dark-mode design system
 │   └── package.json
-├── idea.md                    # Project requirements & FinPilot roadmap
-├── idea.excalidraw            # Architecture & UI wireframes
-└── seed.py                    # Optional demo seeder (test@gmail.com / test123)
 ```
 
 ---
@@ -108,4 +104,3 @@ Spendly starts with **clean zero data**.
 3. Set up your profile (Salary, Current Savings, Secure Minimum Reserve).
 4. Add your upcoming bills (Rent, EMI, Rasan, etc.) with custom due dates.
 5. Watch your **Safe to Spend Today** metric and Timeline update automatically!
-6. (Optional) Run `python seed.py` if you ever want to quickly seed a demo account (`test@gmail.com` / `test123`).
