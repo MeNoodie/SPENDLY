@@ -18,6 +18,7 @@ export default function DashboardView({
   loading,
   onRefresh,
   onQuickTogglePaid,
+  onCreditSalary,
   onNavigate
 }) {
   if (loading || !dashboardData) {
@@ -33,6 +34,9 @@ export default function DashboardView({
 
   const { safe_to_spend_today, current_picture, next_few_weeks, recent_decisions, user_name, user_code } = dashboardData;
 
+  const totalSpendings = current_picture.total_spendings ?? ((current_picture.paid_bills_total || 0) + (current_picture.upcoming_essentials || 0));
+  const remainingCash = current_picture.remaining_cash_balance ?? Math.max(0, current_picture.current_savings - (current_picture.paid_bills_total || 0));
+
   const isHealthy = safe_to_spend_today > 15000;
   const isTight = safe_to_spend_today > 0 && safe_to_spend_today <= 15000;
   const isDanger = safe_to_spend_today <= 0;
@@ -41,7 +45,7 @@ export default function DashboardView({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px', maxWidth: '1200px', margin: '0 auto' }}>
 
       {/* Top Banner / Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.5px' }}>
@@ -66,29 +70,58 @@ export default function DashboardView({
             Real-time balance calculations derived directly from your profile and active bills.
           </p>
         </div>
-        <button
-          onClick={() => onNavigate('decisions')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-            color: '#052e16',
-            border: 'none',
-            borderRadius: '10px',
-            padding: '10px 18px',
-            fontWeight: '700',
-            fontSize: '13px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)',
-            transition: 'transform 0.15s ease'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <Sparkles size={16} />
-          <span>New Decision</span>
-        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {current_picture.salary > 0 && (
+            <button
+              onClick={onCreditSalary}
+              title="Credit your monthly salary into active balance"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(16, 185, 129, 0.14)',
+                color: '#34d399',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                borderRadius: '10px',
+                padding: '10px 16px',
+                fontWeight: '700',
+                fontSize: '13px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.14)'}
+            >
+              <TrendingUp size={16} />
+              <span>Credit Salary (+₹{current_picture.salary.toLocaleString('en-IN')})</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => onNavigate('decisions')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+              color: '#052e16',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '10px 18px',
+              fontWeight: '700',
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)',
+              transition: 'transform 0.15s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <Sparkles size={16} />
+            <span>New Decision</span>
+          </button>
+        </div>
       </div>
 
       {/* 1. HERO CARD: Safe to Spend Today (Matching idea.excalidraw) */}
@@ -109,7 +142,7 @@ export default function DashboardView({
               <span className={`badge ${isDanger ? 'badge-rose' : isTight ? 'badge-amber' : 'badge-emerald'}`}>
                 {isDanger ? '⚠️ Safety Buffer Breached' : isTight ? '⚡ Tight Spending Margin' : '✅ Optimal Spending Buffer'}
               </span>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Formula: Current - Upcoming - Reserve</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Formula: Balance - Total Spendings - Reserve</span>
             </div>
 
             <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
@@ -121,7 +154,7 @@ export default function DashboardView({
             </div>
 
             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>Available after reserving <strong>₹{current_picture.secure_savings.toLocaleString('en-IN')}</strong> and paying <strong>₹{current_picture.upcoming_essentials.toLocaleString('en-IN')}</strong> bills.</span>
+              <span>Protected after reserving <strong>₹{current_picture.secure_savings.toLocaleString('en-IN')}</strong> and deducting <strong>₹{totalSpendings.toLocaleString('en-IN')}</strong> total spendings.</span>
             </div>
           </div>
 
@@ -130,7 +163,7 @@ export default function DashboardView({
             padding: '16px 20px',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            minWidth: '240px'
+            minWidth: '260px'
           }}>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Formula Breakdown
@@ -141,8 +174,16 @@ export default function DashboardView({
                 <span style={{ color: '#ffffff' }}>+ ₹{current_picture.current_savings.toLocaleString('en-IN')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#fb7185' }}>Upcoming Essentials:</span>
-                <span style={{ color: '#fb7185' }}>- ₹{current_picture.upcoming_essentials.toLocaleString('en-IN')}</span>
+                <span style={{ color: '#fb7185' }}>Total Spendings:</span>
+                <span style={{ color: '#fb7185' }}>- ₹{totalSpendings.toLocaleString('en-IN')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', paddingLeft: '8px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>• Paid Expenses:</span>
+                <span style={{ color: 'var(--text-muted)' }}>₹{(current_picture.paid_bills_total || 0).toLocaleString('en-IN')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', paddingLeft: '8px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>• Upcoming Due:</span>
+                <span style={{ color: 'var(--text-muted)' }}>₹{current_picture.upcoming_essentials.toLocaleString('en-IN')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#38bdf8' }}>Preferred Minimum:</span>
@@ -158,14 +199,14 @@ export default function DashboardView({
         </div>
       </div>
 
-      {/* 2. CURRENT PICTURE WIDGET (3-column layout from idea.excalidraw) */}
+      {/* 2. CURRENT PICTURE WIDGET (4-column layout) */}
       <div>
         <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Layers size={18} color="var(--accent-cyan)" />
           <span>Current Picture</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '16px' }}>
 
           {/* Card A: Current Balance */}
           <div className="glass-panel" style={{ padding: '20px' }}>
@@ -179,14 +220,30 @@ export default function DashboardView({
               ₹{current_picture.current_savings.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-              Total available savings entered
+              Remaining Cash: ₹{remainingCash.toLocaleString('en-IN')}
             </div>
           </div>
 
-          {/* Card B: Upcoming Essentials */}
+          {/* Card B: Total Spendings */}
           <div className="glass-panel" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Upcoming Essentials</span>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Spendings</span>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <TrendingUp size={16} color="#f87171" />
+              </div>
+            </div>
+            <div style={{ fontSize: '26px', fontWeight: '800', color: '#f87171', fontFamily: 'var(--font-mono)' }}>
+              ₹{totalSpendings.toLocaleString('en-IN')}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+              Paid: ₹{(current_picture.paid_bills_total || 0).toLocaleString('en-IN')} | Due: ₹{current_picture.upcoming_essentials.toLocaleString('en-IN')}
+            </div>
+          </div>
+
+          {/* Card C: Upcoming Essentials */}
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Upcoming Due</span>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <AlertTriangle size={16} color="#fb7185" />
               </div>
@@ -195,14 +252,14 @@ export default function DashboardView({
               ₹{current_picture.upcoming_essentials.toLocaleString('en-IN')}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-              Auto-calculated from manual bills
+              Unpaid essential bills due
             </div>
           </div>
 
-          {/* Card C: Preferred Minimum Balance */}
+          {/* Card D: Preferred Minimum Balance */}
           <div className="glass-panel" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Preferred Minimum Bal</span>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Preferred Minimum</span>
               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <ShieldCheck size={16} color="#34d399" />
               </div>

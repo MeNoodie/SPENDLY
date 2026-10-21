@@ -22,7 +22,8 @@ import {
   updateExpense, 
   deleteExpense, 
   evaluateDecision, 
-  fetchDecisionHistory 
+  fetchDecisionHistory,
+  creditSalary
 } from './api';
 
 export default function App() {
@@ -123,6 +124,15 @@ export default function App() {
     await loadAllData();
   };
 
+  const handleCreditSalary = async () => {
+    try {
+      await creditSalary();
+      await loadAllData();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const upcomingCount = expenses.filter(e => e.payment_status === 'unpaid' && e.included_in_timeline).length;
   const upcomingEssentialsTotal = dashboardData?.current_picture?.upcoming_essentials || 0;
 
@@ -183,6 +193,7 @@ export default function App() {
             loading={loading} 
             onRefresh={loadAllData} 
             onQuickTogglePaid={handleQuickTogglePaid}
+            onCreditSalary={handleCreditSalary}
             onNavigate={setActiveTab}
           />
         )}

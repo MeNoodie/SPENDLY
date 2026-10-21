@@ -99,6 +99,16 @@ export async function updateProfile(payload) {
   return json.data;
 }
 
+export async function creditSalary() {
+  const res = await fetch(`${BASE_URL}/profile/credit-salary`, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.detail || 'Failed to credit salary');
+  return json;
+}
+
 export async function fetchExpenses() {
   const res = await fetch(`${BASE_URL}/expenses`, {
     headers: getAuthHeaders()

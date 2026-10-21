@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -84,6 +84,27 @@ def update_profile(payload: ProfileUpdate, current_user: User = Depends(get_curr
             "salary": profile.salary,
             "salary_day": profile.salary_day,
             "current_savings": profile.current_savings,
+            "secure_savings": profile.secure_savings
+        }
+    }
+
+@router.post("/credit-salary")
+def credit_salary(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    profile = db.query(FinancialProfile).filter(FinancialProfile.user_id == current_user.id).first()
+    if not profile or profile.salary <= 0:
+        raise HTTPException(status_code=400, detail="Please set a valid monthly salary in your profile first")
+
+    # Add salary to current savings
+    profile.current_savings = float(profile.current_savings or 0.0) + float(profile.salary)
+    db.commit()
+    db.refresh(profile)
+
+    return {
+        "status": "success",
+        "message": f"Monthly salary of ₹{profile.salary:,.0f} has been credited to your balance!",
+        "data": {
+            "current_savings": profile.current_savings,
+            "salary": profile.salary,
             "secure_savings": profile.secure_savings
         }
     }
